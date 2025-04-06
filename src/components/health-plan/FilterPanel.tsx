@@ -47,7 +47,7 @@ export function FilterPanel() {
                   <SelectValue placeholder="Select..." />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Any</SelectItem>
+                  <SelectItem value="any">Any</SelectItem>
                   {filter.options?.map((option) => (
                     <SelectItem key={option.id} value={option.value}>
                       {option.label}
