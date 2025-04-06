@@ -10,7 +10,7 @@ const Index = () => {
   useEffect(() => {
     if (isAuthenticated) {
       // Redirect to appropriate dashboard
-      navigate(isAdmin ? "/admin" : "/");
+      navigate(isAdmin ? "/admin" : "/dashboard");
     } else {
       navigate("/login");
     }
