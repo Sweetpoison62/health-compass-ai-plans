@@ -3,7 +3,7 @@ import React from "react";
 import { useAuth } from "@/context/AuthContext";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, Users, Building, FileHeart, Filter, LogOut } from "lucide-react";
+import { LayoutDashboard, Users, Building, FileHeart, LogOut } from "lucide-react";
 
 export function Sidebar() {
   const { isAdmin, logout } = useAuth();
@@ -42,11 +42,6 @@ export function Sidebar() {
       name: "Plans",
       href: "/admin/plans",
       icon: FileHeart,
-    },
-    {
-      name: "Filters",
-      href: "/admin/filters",
-      icon: Filter,
     },
   ];
   

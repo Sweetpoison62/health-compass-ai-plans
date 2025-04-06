@@ -13,6 +13,8 @@ export interface Company {
   description?: string;
   active: boolean;
   createdAt: Date;
+  paymentMethods?: string;
+  countries?: string[];
 }
 
 export interface Medicine {
