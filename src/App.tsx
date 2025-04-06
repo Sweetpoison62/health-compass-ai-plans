@@ -12,6 +12,7 @@ import React from "react";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminPlansPage from "./pages/admin/AdminPlansPage";
 import NotFound from "./pages/NotFound";
 import Index from "./pages/Index";
 
@@ -86,7 +87,7 @@ const App = () => {
                 } />
                 <Route path="/admin/plans" element={
                   <ProtectedRoute requireAdmin>
-                    <AdminDashboard />
+                    <AdminPlansPage />
                   </ProtectedRoute>
                 } />
                 <Route path="/admin/filters" element={
