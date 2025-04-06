@@ -4,10 +4,11 @@ import { HealthPlan, Company } from "@/types";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Heart, Pill } from "lucide-react";
+import { Heart, Pill, Shield, CheckCircle } from "lucide-react";
 import { useHealthData } from "@/context/HealthDataContext";
 import { cn } from "@/lib/utils";
 import { PlanDetailView } from "./PlanDetailView";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface PlanCardProps {
   plan: HealthPlan;
@@ -21,18 +22,41 @@ export function PlanCard({ plan, company }: PlanCardProps) {
   const isActive = plan.active && company.active;
   const isFavorite = favoritePlans.includes(plan.id);
   
+  // Calculate how many medicines are covered
+  const medicinesCovered = plan.coversMedicines.length;
+  const medicinePercentage = medicines.length > 0 
+    ? Math.round((medicinesCovered / medicines.length) * 100)
+    : 0;
+  
   return (
     <>
       <Card 
         className={cn(
-          "transition-all duration-200 hover:shadow-md",
-          isActive ? "opacity-100" : "opacity-70"
+          "transition-all duration-200 hover:shadow-md border-l-4",
+          isActive ? "opacity-100" : "opacity-70",
+          plan.priority > 2 ? "border-l-health-teal-500" : 
+            (plan.priority > 0 ? "border-l-health-blue-400" : "border-l-transparent"),
+          isFavorite && "ring-1 ring-destructive ring-offset-1"
         )}
       >
         <CardHeader className="pb-3">
           <div className="flex justify-between items-start">
             <div>
-              <CardTitle className="text-xl">{plan.name}</CardTitle>
+              <CardTitle className="text-xl group flex items-center gap-1">
+                {plan.name}
+                {plan.priority > 2 && (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <CheckCircle className="h-4 w-4 text-health-teal-500 ml-1" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p className="text-xs">Recommended Plan</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
+              </CardTitle>
               <CardDescription className="text-sm">{company.name}</CardDescription>
             </div>
             <div className="flex gap-2">
@@ -48,16 +72,25 @@ export function PlanCard({ plan, company }: PlanCardProps) {
           </div>
         </CardHeader>
         <CardContent>
-          <p className="text-sm mb-4">{plan.description}</p>
-          <div className="text-sm">
-            <p className="font-medium mb-2">Coverage Summary:</p>
-            <p className="text-muted-foreground">{plan.coverageSummary}</p>
+          <div className="text-sm mb-4 line-clamp-2">
+            {plan.description || plan.coverageSummary}
+          </div>
+          
+          <div className="bg-muted/30 p-3 rounded-md mb-4">
+            <div className="flex justify-between text-sm mb-2">
+              <div className="flex items-center gap-1">
+                <Shield className="h-4 w-4 text-health-blue-600" />
+                <span className="font-medium">Coverage Details</span>
+              </div>
+              <span className="text-muted-foreground">{medicinePercentage}% of medicines</span>
+            </div>
+            <p className="text-xs text-muted-foreground line-clamp-2">{plan.coverageSummary}</p>
           </div>
           
           {plan.coversMedicines.length > 0 && (
-            <div className="mt-4">
-              <p className="text-sm font-medium mb-2 flex items-center gap-1">
-                <Pill className="h-4 w-4" /> Covered Medicines:
+            <div>
+              <p className="text-xs font-medium mb-2 flex items-center gap-1">
+                <Pill className="h-3 w-3" /> Covered Medicines:
               </p>
               <div className="flex flex-wrap gap-1">
                 {plan.coversMedicines.slice(0, 3).map(medicineId => {
@@ -79,10 +112,11 @@ export function PlanCard({ plan, company }: PlanCardProps) {
         </CardContent>
         <CardFooter className="flex justify-between">
           <Button
-            variant="outline"
+            variant="ghost"
             size="sm"
             className={cn(
-              isFavorite && "text-destructive border-destructive hover:text-destructive hover:border-destructive"
+              "hover:bg-transparent",
+              isFavorite && "text-destructive hover:text-destructive/90"
             )}
             onClick={() => toggleFavoritePlan(plan.id)}
           >
@@ -90,6 +124,7 @@ export function PlanCard({ plan, company }: PlanCardProps) {
             {isFavorite ? "Saved" : "Save"}
           </Button>
           <Button 
+            variant="default"
             size="sm"
             disabled={!isActive}
             onClick={() => setIsDetailViewOpen(true)}

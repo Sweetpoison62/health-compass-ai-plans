@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useHealthData } from "@/context/HealthDataContext";
 import { HealthPlan } from "@/types";
 import { Button } from "@/components/ui/button";
@@ -33,7 +33,7 @@ export function PlanForm({ mode, plan, onCancel }: PlanFormProps) {
     id: plan?.id || uuidv4(),
     name: plan?.name || "",
     description: plan?.description || "",
-    companyId: plan?.companyId || "",
+    companyId: plan?.companyId || (companies.length > 0 ? companies[0].id : ""),
     coverageSummary: plan?.coverageSummary || "",
     price: plan?.price || 0,
     active: plan?.active !== undefined ? plan.active : true,
@@ -87,7 +87,7 @@ export function PlanForm({ mode, plan, onCancel }: PlanFormProps) {
       ...prev,
       filters: {
         ...(prev.filters || {}),
-        [key]: value
+        [key]: value === "any" ? undefined : value
       }
     }));
   };

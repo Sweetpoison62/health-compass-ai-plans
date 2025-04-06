@@ -4,10 +4,12 @@ import { MainLayout } from "@/components/layout/MainLayout";
 import { FilterPanel } from "@/components/health-plan/FilterPanel";
 import { PlanCard } from "@/components/health-plan/PlanCard";
 import { useHealthData } from "@/context/HealthDataContext";
-import { Heart, PlaneTakeoff, ThumbsUp, Search, Filter } from "lucide-react";
+import { Heart, PlaneTakeoff, ThumbsUp, Search, Filter, AlertTriangle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function Dashboard() {
   const { 
@@ -15,10 +17,12 @@ export default function Dashboard() {
     companies, 
     favoritePlans, 
     searchQuery, 
-    setSearchQuery 
+    setSearchQuery,
+    healthPlans
   } = useHealthData();
   
   const [showFilters, setShowFilters] = useState(false);
+  const [activeTab, setActiveTab] = useState("all");
   
   const recommendedPlans = getRecommendedPlans();
   
@@ -32,15 +36,31 @@ export default function Dashboard() {
     e.preventDefault();
     // The search is already active due to the onChange handler
   };
+
+  // Calculate active plans count
+  const activePlansCount = healthPlans.filter(plan => {
+    const company = companies.find(c => c.id === plan.companyId);
+    return plan.active && company?.active;
+  }).length;
   
   return (
     <MainLayout>
       <div className="space-y-8">
-        <div>
-          <h1 className="text-3xl font-bold mb-2">Health Plan Dashboard</h1>
-          <p className="text-muted-foreground">
-            Find the perfect health plan tailored to your needs
-          </p>
+        <div className="flex justify-between items-start">
+          <div>
+            <h1 className="text-3xl font-bold mb-2">Health Plan Dashboard</h1>
+            <p className="text-muted-foreground">
+              Find the perfect health plan tailored to your needs
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="bg-muted px-3 py-2 rounded-md text-sm">
+              <span className="font-medium">{recommendedPlans.length}</span> plans found
+            </div>
+            <div className="bg-health-teal-100 text-health-teal-700 px-3 py-2 rounded-md text-sm">
+              <span className="font-medium">{activePlansCount}</span> active plans
+            </div>
+          </div>
         </div>
         
         {/* Search Bar */}
@@ -72,35 +92,103 @@ export default function Dashboard() {
           
           {/* Main content */}
           <div className="col-span-12 lg:col-span-9">
-            {/* Top Recommendations */}
-            <section className="mb-10">
-              <div className="flex items-center gap-2 mb-6">
-                <div className="h-8 w-8 rounded-full bg-health-teal-100 flex items-center justify-center">
-                  <ThumbsUp className="h-4 w-4 text-health-teal-700" />
-                </div>
-                <h2 className="text-2xl font-semibold">Top Recommendations</h2>
+            {/* Plan Tabs */}
+            <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab} className="mb-6">
+              <TabsList>
+                <TabsTrigger value="all">All Plans</TabsTrigger>
+                <TabsTrigger value="recommended">Recommended</TabsTrigger>
+                {savedPlans.length > 0 && (
+                  <TabsTrigger value="saved">
+                    Saved
+                    <span className="ml-1 h-5 w-5 rounded-full bg-primary/20 text-xs flex items-center justify-center">
+                      {savedPlans.length}
+                    </span>
+                  </TabsTrigger>
+                )}
+              </TabsList>
+            </Tabs>
+
+            {recommendedPlans.length === 0 && (
+              <Alert className="mb-6">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertTitle>No plans found</AlertTitle>
+                <AlertDescription>
+                  Try adjusting your search criteria or filters to see more options.
+                </AlertDescription>
+              </Alert>
+            )}
+
+            <TabsContent value="all" className="mt-0">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {recommendedPlans.map((plan) => (
+                  <PlanCard 
+                    key={plan.id} 
+                    plan={plan} 
+                    company={companies.find(c => c.id === plan.companyId)!} 
+                  />
+                ))}
               </div>
-              
-              {topRecommendations.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {topRecommendations.map((plan) => (
-                    <PlanCard 
-                      key={plan.id} 
-                      plan={plan} 
-                      company={companies.find(c => c.id === plan.companyId)!} 
-                    />
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center p-12 bg-muted/50 rounded-lg">
-                  <p>No recommendations available. Try adjusting your filters.</p>
-                </div>
-              )}
-            </section>
+            </TabsContent>
             
-            {/* Saved Plans */}
-            {savedPlans.length > 0 && (
+            <TabsContent value="recommended" className="mt-0">
+              {/* Top Recommendations */}
               <section className="mb-10">
+                <div className="flex items-center gap-2 mb-6">
+                  <div className="h-8 w-8 rounded-full bg-health-teal-100 flex items-center justify-center">
+                    <ThumbsUp className="h-4 w-4 text-health-teal-700" />
+                  </div>
+                  <h2 className="text-2xl font-semibold">Top Recommendations</h2>
+                </div>
+                
+                {topRecommendations.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {topRecommendations.map((plan) => (
+                      <PlanCard 
+                        key={plan.id} 
+                        plan={plan} 
+                        company={companies.find(c => c.id === plan.companyId)!} 
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center p-12 bg-muted/50 rounded-lg">
+                    <p>No recommendations available. Try adjusting your filters.</p>
+                  </div>
+                )}
+                
+                {/* More Plans */}
+                {recommendedPlans.length > 3 && (
+                  <>
+                    <Separator className="my-8" />
+                    <div className="flex items-center gap-2 mb-6">
+                      <div className="h-8 w-8 rounded-full bg-health-green-100 flex items-center justify-center">
+                        <PlaneTakeoff className="h-4 w-4 text-health-green-700" />
+                      </div>
+                      <h2 className="text-2xl font-semibold">More Plans</h2>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {recommendedPlans
+                        .filter(plan => 
+                          !topRecommendations.slice(0, 3).some(p => p.id === plan.id)
+                        )
+                        .map((plan) => (
+                          <PlanCard 
+                            key={plan.id} 
+                            plan={plan} 
+                            company={companies.find(c => c.id === plan.companyId)!} 
+                          />
+                        ))
+                      }
+                    </div>
+                  </>
+                )}
+              </section>
+            </TabsContent>
+            
+            <TabsContent value="saved" className="mt-0">
+              {/* Saved Plans */}
+              <section>
                 <div className="flex items-center gap-2 mb-6">
                   <div className="h-8 w-8 rounded-full bg-health-blue-100 flex items-center justify-center">
                     <Heart className="h-4 w-4 text-health-blue-700" />
@@ -108,57 +196,23 @@ export default function Dashboard() {
                   <h2 className="text-2xl font-semibold">Saved Plans</h2>
                 </div>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {savedPlans.map((plan) => (
-                    <PlanCard 
-                      key={plan.id} 
-                      plan={plan} 
-                      company={companies.find(c => c.id === plan.companyId)!} 
-                    />
-                  ))}
-                </div>
-                
-                <Separator className="my-8" />
-              </section>
-            )}
-            
-            {/* All Plans (if not shown in the first two sections) */}
-            {recommendedPlans.length > (savedPlans.length + topRecommendations.length) && (
-              <section>
-                <div className="flex items-center gap-2 mb-6">
-                  <div className="h-8 w-8 rounded-full bg-health-green-100 flex items-center justify-center">
-                    <PlaneTakeoff className="h-4 w-4 text-health-green-700" />
-                  </div>
-                  <h2 className="text-2xl font-semibold">More Plans</h2>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {recommendedPlans
-                    .filter(plan => 
-                      !topRecommendations.slice(0, 3).some(p => p.id === plan.id) &&
-                      !savedPlans.some(p => p.id === plan.id)
-                    )
-                    .map((plan) => (
+                {savedPlans.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {savedPlans.map((plan) => (
                       <PlanCard 
                         key={plan.id} 
                         plan={plan} 
                         company={companies.find(c => c.id === plan.companyId)!} 
                       />
-                    ))
-                  }
-                </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center p-12 bg-muted/50 rounded-lg">
+                    <p>No saved plans yet. Save plans to compare them later.</p>
+                  </div>
+                )}
               </section>
-            )}
-            
-            {/* Show when no plans are available */}
-            {recommendedPlans.length === 0 && (
-              <div className="text-center p-12 bg-muted/50 rounded-lg mt-6">
-                <h3 className="text-xl font-medium mb-2">No plans found</h3>
-                <p className="text-muted-foreground">
-                  Try adjusting your search criteria or filters to see more options.
-                </p>
-              </div>
-            )}
+            </TabsContent>
           </div>
         </div>
       </div>

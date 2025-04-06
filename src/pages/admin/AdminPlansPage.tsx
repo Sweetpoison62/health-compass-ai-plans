@@ -21,28 +21,18 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
 import { PlanForm } from "@/components/admin/PlanForm";
-import { Plus, FileEdit, Trash2, FileHeart } from "lucide-react";
+import { Plus, FileEdit, Trash2, Search } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 export default function AdminPlansPage() {
-  const { healthPlans, companies, medicines, deleteHealthPlan } = useHealthData();
+  const { healthPlans, companies, deleteHealthPlan } = useHealthData();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [currentPlan, setCurrentPlan] = useState<HealthPlan | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
   const { toast } = useToast();
   
   const handleDeletePlan = () => {
@@ -66,6 +56,11 @@ export default function AdminPlansPage() {
     setCurrentPlan(plan);
     setIsDeleteDialogOpen(true);
   };
+
+  const filteredPlans = healthPlans.filter(plan => 
+    plan.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    companies.find(c => c.id === plan.companyId)?.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
   
   return (
     <MainLayout>
@@ -78,6 +73,18 @@ export default function AdminPlansPage() {
           <Button onClick={() => setIsAddDialogOpen(true)}>
             <Plus className="mr-2 h-4 w-4" /> Add Plan
           </Button>
+        </div>
+
+        <div className="flex items-center mb-6">
+          <div className="relative flex-grow max-w-sm">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input 
+              placeholder="Search plans or companies..." 
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-9"
+            />
+          </div>
         </div>
         
         <div className="rounded-md border">
@@ -93,14 +100,14 @@ export default function AdminPlansPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {healthPlans.length === 0 ? (
+              {filteredPlans.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                    No health plans found. Add a new plan to get started.
+                    {searchTerm ? "No plans match your search" : "No health plans found. Add a new plan to get started."}
                   </TableCell>
                 </TableRow>
               ) : (
-                healthPlans.map(plan => {
+                filteredPlans.map(plan => {
                   const company = companies.find(c => c.id === plan.companyId);
                   return (
                     <TableRow key={plan.id}>
