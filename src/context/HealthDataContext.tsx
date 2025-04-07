@@ -1,4 +1,3 @@
-
 import React, { createContext, useState, useContext, ReactNode } from "react";
 import { 
   Company, 
@@ -35,18 +34,26 @@ interface HealthDataContextType {
   toggleFavoritePlan: (planId: string) => void;
   favoritePlans: string[];
   
-  // Admin methods
+  // Admin methods - Companies
+  updateCompany: (company: Company) => void;
+  createCompany: (company: Company) => void;
+  deleteCompany: (companyId: string) => void;
+  
+  // Admin methods - Medicines
+  updateMedicine: (medicine: Medicine) => void;
+  createMedicine: (medicine: Medicine) => void;
+  deleteMedicine: (medicineId: string) => void;
+  getMedicinesByCompany: (companyId: string) => Medicine[];
+  
+  // Admin methods - Filters
   updateFilter: (filter: DynamicFilter) => void;
   createFilter: (filter: DynamicFilter) => void;
   deleteFilter: (filterId: string) => void;
   
+  // Admin methods - Plans
   updateHealthPlan: (plan: HealthPlan) => void;
   createHealthPlan: (plan: HealthPlan) => void;
   deleteHealthPlan: (planId: string) => void;
-  
-  updateCompany: (company: Company) => void;
-  createCompany: (company: Company) => void;
-  deleteCompany: (companyId: string) => void;
 }
 
 const HealthDataContext = createContext<HealthDataContextType | undefined>(undefined);
@@ -208,7 +215,45 @@ export const HealthDataProvider = ({ children }: { children: ReactNode }) => {
     });
   };
   
-  // Admin methods
+  // Admin methods - Companies
+  const updateCompany = (company: Company) => {
+    setCompanies(prev => prev.map(c => c.id === company.id ? company : c));
+  };
+  
+  const createCompany = (company: Company) => {
+    setCompanies(prev => [...prev, company]);
+  };
+  
+  const deleteCompany = (companyId: string) => {
+    setCompanies(prev => prev.filter(c => c.id !== companyId));
+  };
+  
+  // Admin methods - Medicines
+  const updateMedicine = (medicine: Medicine) => {
+    setMedicines(prev => prev.map(m => m.id === medicine.id ? medicine : m));
+  };
+  
+  const createMedicine = (medicine: Medicine) => {
+    setMedicines(prev => [...prev, medicine]);
+  };
+  
+  const deleteMedicine = (medicineId: string) => {
+    setMedicines(prev => prev.filter(m => m.id !== medicineId));
+    
+    // Also remove this medicine from any health plans
+    setHealthPlans(prev => prev.map(plan => ({
+      ...plan,
+      coversMedicines: plan.coversMedicines.filter(id => id !== medicineId)
+    })));
+  };
+  
+  const getMedicinesByCompany = (companyId: string): Medicine[] => {
+    return medicines.filter(medicine => 
+      medicine.companyIds.includes(companyId)
+    );
+  };
+  
+  // Admin methods - Filters
   const updateFilter = (filter: DynamicFilter) => {
     setFilters(prev => prev.map(f => f.id === filter.id ? filter : f));
   };
@@ -221,6 +266,7 @@ export const HealthDataProvider = ({ children }: { children: ReactNode }) => {
     setFilters(prev => prev.filter(f => f.id !== filterId));
   };
   
+  // Admin methods - Health Plans
   const updateHealthPlan = (plan: HealthPlan) => {
     setHealthPlans(prev => prev.map(p => p.id === plan.id ? plan : p));
   };
@@ -231,18 +277,6 @@ export const HealthDataProvider = ({ children }: { children: ReactNode }) => {
   
   const deleteHealthPlan = (planId: string) => {
     setHealthPlans(prev => prev.filter(p => p.id !== planId));
-  };
-  
-  const updateCompany = (company: Company) => {
-    setCompanies(prev => prev.map(c => c.id === company.id ? company : c));
-  };
-  
-  const createCompany = (company: Company) => {
-    setCompanies(prev => [...prev, company]);
-  };
-  
-  const deleteCompany = (companyId: string) => {
-    setCompanies(prev => prev.filter(c => c.id !== companyId));
   };
   
   return (
@@ -259,15 +293,19 @@ export const HealthDataProvider = ({ children }: { children: ReactNode }) => {
       getRecommendedPlans,
       toggleFavoritePlan,
       favoritePlans,
+      updateCompany,
+      createCompany,
+      deleteCompany,
+      updateMedicine,
+      createMedicine,
+      deleteMedicine,
+      getMedicinesByCompany,
       updateFilter,
       createFilter,
       deleteFilter,
       updateHealthPlan,
       createHealthPlan,
       deleteHealthPlan,
-      updateCompany,
-      createCompany,
-      deleteCompany,
     }}>
       {children}
     </HealthDataContext.Provider>

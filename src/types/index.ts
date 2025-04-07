@@ -15,12 +15,19 @@ export interface Company {
   createdAt: Date;
   paymentMethods?: string;
   countries?: string[];
+  address?: string;
+  contactEmail?: string;
+  contactPhone?: string;
 }
 
 export interface Medicine {
   id: string;
   name: string;
   description?: string;
+  category?: string;
+  manufacturer?: string;
+  price?: number;
+  companyIds: string[];  // Companies that offer this medicine
 }
 
 export interface DynamicFilter {

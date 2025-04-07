@@ -13,6 +13,7 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminPlansPage from "./pages/admin/AdminPlansPage";
+import AdminMedicinesPage from "./pages/admin/AdminMedicinesPage";
 import NotFound from "./pages/NotFound";
 import Index from "./pages/Index";
 
@@ -83,6 +84,11 @@ const App = () => {
                 <Route path="/admin/companies" element={
                   <ProtectedRoute requireAdmin>
                     <AdminDashboard />
+                  </ProtectedRoute>
+                } />
+                <Route path="/admin/medicines" element={
+                  <ProtectedRoute requireAdmin>
+                    <AdminMedicinesPage />
                   </ProtectedRoute>
                 } />
                 <Route path="/admin/plans" element={

@@ -44,6 +44,9 @@ export function CompanyForm({ mode, company, onCancel }: CompanyFormProps) {
     createdAt: company?.createdAt || new Date(),
     paymentMethods: company?.paymentMethods || "",
     countries: company?.countries || [] as string[],
+    address: company?.address || "",
+    contactEmail: company?.contactEmail || "",
+    contactPhone: company?.contactPhone || "",
   });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -99,6 +102,9 @@ export function CompanyForm({ mode, company, onCancel }: CompanyFormProps) {
       createdAt: formData.createdAt,
       paymentMethods: formData.paymentMethods,
       countries: formData.countries,
+      address: formData.address,
+      contactEmail: formData.contactEmail,
+      contactPhone: formData.contactPhone,
     };
 
     if (mode === "add") {
@@ -139,6 +145,45 @@ export function CompanyForm({ mode, company, onCancel }: CompanyFormProps) {
           onChange={handleInputChange}
           rows={3}
         />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="address">Address</Label>
+          <Textarea
+            id="address"
+            name="address"
+            value={formData.address}
+            onChange={handleInputChange}
+            rows={2}
+            placeholder="Full company address"
+          />
+        </div>
+        
+        <div className="space-y-4">
+          <div>
+            <Label htmlFor="contactEmail">Contact Email</Label>
+            <Input
+              id="contactEmail"
+              name="contactEmail"
+              type="email"
+              value={formData.contactEmail}
+              onChange={handleInputChange}
+              placeholder="contact@company.com"
+            />
+          </div>
+          
+          <div>
+            <Label htmlFor="contactPhone">Contact Phone</Label>
+            <Input
+              id="contactPhone"
+              name="contactPhone"
+              value={formData.contactPhone}
+              onChange={handleInputChange}
+              placeholder="+1 (555) 123-4567"
+            />
+          </div>
+        </div>
       </div>
 
       <div className="space-y-2">
